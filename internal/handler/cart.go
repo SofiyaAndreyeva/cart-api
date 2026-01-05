@@ -3,6 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
+	"strings"
+
+	"github.com/SofiyaAndreyeva/cart-api/internal/domain"
 )
 
 func (h *Handler) carts(w http.ResponseWriter, r *http.Request) {
@@ -14,6 +18,12 @@ func (h *Handler) carts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 func (h *Handler) cartById(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodPost:
+		h.addToCart(w, r)
+	default:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	}
 }
 
 // POST http://localhost:3000/carts
@@ -27,6 +37,38 @@ func (h *Handler) createCart(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 
 	err = json.NewEncoder(w).Encode(cart)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+// localhost:3000/carts/cartId/items
+func (h *Handler) addToCart(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) != 3 || parts[2] != "items" {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		return
+	}
+	cartID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "invalid cart id", http.StatusBadRequest)
+		return
+	}
+	var req domain.AddToCartRequest
+	err = json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	item, err := h.service.AddToCart(ctx, cartID, req.Product, req.Price)
+	if err != nil {
+		h.handleError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+
+	err = json.NewEncoder(w).Encode(item)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
