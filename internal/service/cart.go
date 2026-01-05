@@ -22,3 +22,31 @@ func (cs *CartService) CreateCart(ctx context.Context) (domain.Cart, error) {
 	}
 	return cart, nil
 }
+func (cs *CartService) AddToCart(ctx context.Context, cartID int, product string, price float64) (domain.CartItem, error) {
+	if product == "" {
+		return domain.CartItem{}, domain.ErrEmptyProduct
+	}
+	if price <= 0 {
+		return domain.CartItem{}, domain.ErrInvalidPrice
+	}
+	exists, err := cs.repo.CartExists(ctx, cartID)
+	if err != nil {
+		return domain.CartItem{}, fmt.Errorf("service: cart check failed: %w", err)
+	}
+	if !exists {
+		return domain.CartItem{}, domain.ErrCartNotFound
+	}
+	items, err := cs.repo.GetItemsByCartID(ctx, cartID)
+	if err != nil {
+		return domain.CartItem{}, fmt.Errorf("check cart: %w", err)
+	}
+	if len(items) >= 5 {
+		return domain.CartItem{}, domain.ErrLimitCart
+	}
+	addedItem, err := cs.repo.AddToCart(ctx, cartID, product, price)
+	if err != nil {
+		return domain.CartItem{}, fmt.Errorf("add to db: %w", err)
+	}
+
+	return addedItem, nil
+}
