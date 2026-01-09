@@ -62,3 +62,19 @@ func (r *CartRepository) CartExists(ctx context.Context, cartID int) (bool, erro
 	err := r.db.GetContext(ctx, &exists, query, cartID)
 	return exists, err
 }
+func (r *CartRepository) DeleteCartItem(ctx context.Context, cartItemID int, cartID int) error {
+	const query = `DELETE FROM cart_items WHERE id = $1 AND cart_id = $2`
+	res, err := r.db.ExecContext(ctx, query, cartItemID, cartID)
+	if err != nil {
+		return fmt.Errorf("repository: failed to delete cart item %d: %w", cartItemID, err)
+	}
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("repository: rows affected error: %w", err)
+	}
+
+	if affected == 0 {
+		return domain.ErrCartItemNotFound
+	}
+	return nil
+}
