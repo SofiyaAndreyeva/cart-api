@@ -10,6 +10,7 @@ import (
 type Cart interface {
 	CreateCart(ctx context.Context) (domain.Cart, error)
 	AddToCart(ctx context.Context, cartID int, product string, price float64) (domain.CartItem, error)
+	DeleteFromCart(ctx context.Context, cartID int, cartItemID int) error
 }
 
 type Service struct {

@@ -50,3 +50,14 @@ func (cs *CartService) AddToCart(ctx context.Context, cartID int, product string
 
 	return addedItem, nil
 }
+
+func (cs *CartService) DeleteFromCart(ctx context.Context, cartID int, cartItemID int) error {
+	existsCart, err := cs.repo.CartExists(ctx, cartID)
+	if err != nil {
+		return fmt.Errorf("service: cart check failed: %w", err)
+	}
+	if !existsCart {
+		return domain.ErrCartNotFound
+	}
+	return cs.repo.DeleteCartItem(ctx, cartItemID, cartID)
+}
