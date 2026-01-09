@@ -21,6 +21,8 @@ func (h *Handler) cartById(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodPost:
 		h.addToCart(w, r)
+	case http.MethodDelete:
+		h.deleteItemFromCart(w, r)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
@@ -72,4 +74,31 @@ func (h *Handler) addToCart(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+// DELETE http://localhost:3000/carts/1/items/1
+func (h *Handler) deleteItemFromCart(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	if len(parts) != 4 || parts[2] != "items" {
+		http.Error(w, "invalid path", http.StatusBadRequest)
+		return
+	}
+	cartID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "invalid cart id", http.StatusBadRequest)
+		return
+	}
+	cartItemID, err := strconv.Atoi(parts[3])
+	if err != nil {
+		http.Error(w, "invalid cart item id", http.StatusBadRequest)
+		return
+	}
+	err = h.service.DeleteFromCart(ctx, cartID, cartItemID)
+	if err != nil {
+		h.handleError(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
