@@ -61,3 +61,24 @@ func (cs *CartService) DeleteFromCart(ctx context.Context, cartID int, cartItemI
 	}
 	return cs.repo.DeleteCartItem(ctx, cartItemID, cartID)
 }
+
+func (cs *CartService) GetCartItems(ctx context.Context, cartID int) (domain.Cart, error) {
+	exists, err := cs.repo.CartExists(ctx, cartID)
+	if err != nil {
+		return domain.Cart{}, fmt.Errorf("service: cart check failed: %w", err)
+	}
+	if !exists {
+		return domain.Cart{}, domain.ErrCartNotFound
+	}
+	items, err := cs.repo.GetItemsByCartID(ctx, cartID)
+	if err != nil {
+		return domain.Cart{}, fmt.Errorf("check cart: %w", err)
+	}
+	if items == nil {
+		items = []domain.CartItem{}
+	}
+	return domain.Cart{
+		ID:    cartID,
+		Items: items,
+	}, nil
+}
