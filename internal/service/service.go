@@ -12,6 +12,7 @@ type Cart interface {
 	AddToCart(ctx context.Context, cartID int, product string, price float64) (domain.CartItem, error)
 	DeleteFromCart(ctx context.Context, cartID int, cartItemID int) error
 	GetCartItems(ctx context.Context, cartID int) (domain.Cart, error)
+	GetCartPrice(ctx context.Context, cartID int) (domain.CartPriceResponse, error)
 }
 
 type Service struct {
