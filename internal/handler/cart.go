@@ -29,6 +29,10 @@ func (h *Handler) cartById(w http.ResponseWriter, r *http.Request) {
 			h.getCart(w, r)
 			return
 		}
+		if len(parts) == 3 && parts[2] == "price" {
+			h.getCartPrice(w, r)
+			return
+		}
 		http.Error(w, "invalid path", http.StatusBadRequest)
 	default:
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -132,4 +136,26 @@ func (h *Handler) getCart(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+}
+
+// GET http://localhost:8080/carts/1/price
+func (h *Handler) getCartPrice(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
+	cartID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		http.Error(w, "invalid cart id", http.StatusBadRequest)
+		return
+	}
+	data, err := h.service.GetCartPrice(ctx, cartID)
+	if err != nil {
+		h.handleError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
