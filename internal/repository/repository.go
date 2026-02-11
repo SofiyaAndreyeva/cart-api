@@ -13,6 +13,7 @@ type Cart interface {
 	AddToCart(ctx context.Context, cartID int, product string, price float64) (domain.CartItem, error)
 	GetItemsByCartID(ctx context.Context, cartID int) ([]domain.CartItem, error)
 	CartExists(ctx context.Context, cartID int) (bool, error)
+	DeleteCartItem(ctx context.Context, cartItemID int, cartID int) error
 }
 type Repository struct {
 	Cart
