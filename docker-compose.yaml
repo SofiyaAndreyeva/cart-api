@@ -16,5 +16,21 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build: .2
+    container_name: cart-api
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      HTTP_PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: cart-api-db
+      DB_SSLMODE: disable
 volumes:
   pgdata:
