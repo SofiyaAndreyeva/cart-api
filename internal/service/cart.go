@@ -6,16 +6,25 @@ import (
 	"math"
 
 	"github.com/SofiyaAndreyeva/cart-api/internal/domain"
-	"github.com/SofiyaAndreyeva/cart-api/internal/repository"
+	
 )
 
-type CartService struct {
-	repo repository.Cart
+type CartRep interface {
+	CreateCart(ctx context.Context) (domain.Cart, error)
+	AddToCart(ctx context.Context, cartID int, product string, price float64) (domain.CartItem, error)
+	GetItemsByCartID(ctx context.Context, cartID int) ([]domain.CartItem, error)
+	CartExists(ctx context.Context, cartID int) (bool, error)
+	DeleteCartItem(ctx context.Context, cartItemID int, cartID int) error
 }
 
-func NewCartService(repo repository.Cart) *CartService {
+type CartService struct {
+	repo CartRep
+}
+
+func NewCartService(repo CartRep) *CartService {
 	return &CartService{repo: repo}
 }
+
 func (cs *CartService) CreateCart(ctx context.Context) (domain.Cart, error) {
 	cart, err := cs.repo.CreateCart(ctx)
 	if err != nil {
@@ -30,6 +39,7 @@ func (cs *CartService) AddToCart(ctx context.Context, cartID int, product string
 	if price <= 0 {
 		return domain.CartItem{}, domain.ErrInvalidPrice
 	}
+
 	exists, err := cs.repo.CartExists(ctx, cartID)
 	if err != nil {
 		return domain.CartItem{}, fmt.Errorf("service: cart check failed: %w", err)
@@ -37,6 +47,7 @@ func (cs *CartService) AddToCart(ctx context.Context, cartID int, product string
 	if !exists {
 		return domain.CartItem{}, domain.ErrCartNotFound
 	}
+
 	items, err := cs.repo.GetItemsByCartID(ctx, cartID)
 	if err != nil {
 		return domain.CartItem{}, fmt.Errorf("check cart: %w", err)
@@ -44,6 +55,7 @@ func (cs *CartService) AddToCart(ctx context.Context, cartID int, product string
 	if len(items) >= 5 {
 		return domain.CartItem{}, domain.ErrLimitCart
 	}
+
 	addedItem, err := cs.repo.AddToCart(ctx, cartID, product, price)
 	if err != nil {
 		return domain.CartItem{}, fmt.Errorf("add to db: %w", err)
@@ -57,9 +69,11 @@ func (cs *CartService) DeleteFromCart(ctx context.Context, cartID int, cartItemI
 	if err != nil {
 		return fmt.Errorf("service: cart check failed: %w", err)
 	}
+
 	if !existsCart {
 		return domain.ErrCartNotFound
 	}
+
 	return cs.repo.DeleteCartItem(ctx, cartItemID, cartID)
 }
 
@@ -71,6 +85,7 @@ func (cs *CartService) GetCartItems(ctx context.Context, cartID int) (domain.Car
 	if !exists {
 		return domain.Cart{}, domain.ErrCartNotFound
 	}
+
 	items, err := cs.repo.GetItemsByCartID(ctx, cartID)
 	if err != nil {
 		return domain.Cart{}, fmt.Errorf("check cart: %w", err)
@@ -78,6 +93,7 @@ func (cs *CartService) GetCartItems(ctx context.Context, cartID int) (domain.Car
 	if items == nil {
 		items = []domain.CartItem{}
 	}
+	
 	return domain.Cart{
 		ID:    cartID,
 		Items: items,
