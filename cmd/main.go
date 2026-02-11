@@ -16,15 +16,19 @@ func main() {
 		slog.Error("error initializing configs", "error", err)
 		return
 	}
-	db, err := repository.NewPostgresDB(*cfg)
+	
+	db, err := repository.NewPostgresDB(cfg)
 	if err != nil {
 		slog.Error("error initializing postgres db", "error", err)
 		return
 	}
-	repo := repository.NewRepository(db)
-	services := service.NewService(repo)
+
+	repo := repository.NewCartRepository(db)
+	services := service.NewCartService(repo)
 	handlers := handler.NewHandler(services)
+
 	serv := server.NewServer()
+
 	if err := serv.Run(cfg.HTTPPort, handlers.InitialRoutes()); err != nil {
 		slog.Error("application stopped", "error", err)
 	}

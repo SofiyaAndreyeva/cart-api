@@ -13,7 +13,7 @@ type Config struct {
 	DBSSLMode string
 }
 
-func Load() (*Config, error) {
+func Load() (Config, error) {
 	viper.SetConfigFile(".env")
 	viper.SetConfigType("env")
 	viper.AddConfigPath(".")
@@ -22,7 +22,7 @@ func Load() (*Config, error) {
 
 	_ = viper.ReadInConfig()
 
-	cfg := &Config{
+	cfg := Config{
 		HTTPPort: viper.GetString("HTTP_PORT"),
 
 		DBHost:    viper.GetString("DB_HOST"),
