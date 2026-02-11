@@ -16,8 +16,12 @@ func main() {
 		slog.Error("error initializing configs", "error", err)
 		return
 	}
-
-	repo := repository.NewRepository()
+	db, err := repository.NewPostgresDB(*cfg)
+	if err != nil {
+		slog.Error("error initializing postgres db", "error", err)
+		return
+	}
+	repo := repository.NewRepository(db)
 	services := service.NewService(repo)
 	handlers := handler.NewHandler(services)
 	serv := server.NewServer()
