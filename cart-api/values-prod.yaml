@@ -1,0 +1,40 @@
+namespace: prod 
+
+replicaCount: 3
+
+resourceQuota:
+  name: prod-quota
+  requestsCpu: "2"
+  requestsMemory: 2Gi
+  limitsCpu: "4"
+  limitsMemory: 4Gi
+  pods: "50"
+
+config:
+  httpPort: "3000"
+  logLevel: "warn"
+  dbHost: "cart-db"
+  dbPort: "5432"
+  dbName: "cart-api-db"
+  dbSslMode: "disable"
+
+service:
+  type: LoadBalancer
+
+secret:
+  dbUser: "postgres"
+  dbPassword: "postgres"
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "512Mi"
+  limits:
+    cpu: "800m"
+    memory: "512Mi"
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 6
+  targetCPUUtilizationPercentage: 70
+

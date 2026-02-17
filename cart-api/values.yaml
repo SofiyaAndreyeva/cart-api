@@ -1,0 +1,43 @@
+replicaCount: 1
+
+image:
+  repository: cart-api
+  tag: latest
+  pullPolicy: IfNotPresent
+
+resourceQuota:
+  name: test-quota
+  requestsCpu: "1"
+  requestsMemory: 1Gi
+  limitsCpu: "2"
+  limitsMemory: 2Gi
+  pods: "10"
+
+containerPort: 3000
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+configMapName: cart-api-config
+secretName: cart-api-secret
+
+postgres:
+  image: postgres:15
+  db: cart-api-db
+  user: postgres
+  password: postgres
+
+  storage:
+    size: 1Gi
+    storageClass: standard
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
