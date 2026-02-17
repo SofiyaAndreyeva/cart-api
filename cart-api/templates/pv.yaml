@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cart-db-pv-{{ .Release.Name }}
+spec:
+  storageClassName: {{ .Values.postgres.storage.storageClass }}
+  capacity:
+    storage: {{ .Values.postgres.storage.size }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data/cart-db-{{ .Release.Name }}

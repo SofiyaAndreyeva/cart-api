@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: cart-db
+  namespace: {{ .Release.Namespace }}
+spec:
+  serviceName: cart-db
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cart-db         
+  template:
+    metadata:
+      labels:
+        app: cart-db      
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.db }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              value: {{ .Values.postgres.password }}
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          volumeMounts:
+            - name: cart-db-storage
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: cart-db-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        storageClassName: {{ .Values.postgres.storage.storageClass }}
+        resources:
+          requests:
+            storage: {{ .Values.postgres.storage.size }}
