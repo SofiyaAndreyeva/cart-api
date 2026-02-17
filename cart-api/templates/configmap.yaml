@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.configMapName }}
+  namespace: {{ .Release.Namespace }}
+data:
+  HTTP_PORT: "{{ .Values.config.httpPort }}"
+  LOG_LEVEL: "{{ .Values.config.logLevel }}"
+  DB_HOST: "{{ .Values.config.dbHost }}"
+  DB_PORT: "{{ .Values.config.dbPort }}"
+  DB_NAME: "{{ .Values.config.dbName }}"
+  DB_SSLMODE: "{{ .Values.config.dbSslMode }}"
