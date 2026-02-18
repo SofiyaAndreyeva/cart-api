@@ -37,3 +37,31 @@ autoscaling:
   minReplicas: 1
   maxReplicas: 2
   targetCPUUtilizationPercentage: 50
+
+postgres:
+  name: cart-db
+  replicaCount: 1
+  port: 5432
+
+  labels:
+    app: cart-db
+
+  image: postgres:15
+  db: cart-api-db
+  user: postgres
+  password: postgres
+
+  storage:
+    volumeName: cart-db-storage
+    mountPath: /var/lib/postgresql/data
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    storageClass: standard
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
