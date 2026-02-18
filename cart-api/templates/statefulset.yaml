@@ -1,24 +1,24 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: cart-db
+  name: {{ .Values.postgres.name }}
   namespace: {{ .Release.Namespace }}
 spec:
-  serviceName: cart-db
-  replicas: 1
+  serviceName: {{ .Values.postgres.name }}
+  replicas: {{ .Values.postgres.replicaCount }}
   selector:
     matchLabels:
-      app: cart-db         
+      app: {{ .Values.postgres.labels.app }}
   template:
     metadata:
       labels:
-        app: cart-db      
+        app: {{ .Values.postgres.labels.app }}
     spec:
       containers:
         - name: postgres
           image: {{ .Values.postgres.image }}
           ports:
-            - containerPort: 5432
+            - containerPort: {{ .Values.postgres.port }}
           env:
             - name: POSTGRES_DB
               value: {{ .Values.postgres.db }}
@@ -28,19 +28,20 @@ spec:
               value: {{ .Values.postgres.password }}
           resources:
             requests:
-              cpu: 250m
-              memory: 256Mi
+              cpu: {{ .Values.postgres.resources.requests.cpu }}
+              memory: {{ .Values.postgres.resources.requests.memory }}
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: {{ .Values.postgres.resources.limits.cpu }}
+              memory: {{ .Values.postgres.resources.limits.memory }}
           volumeMounts:
-            - name: cart-db-storage
-              mountPath: /var/lib/postgresql/data
+            - name: {{ .Values.postgres.storage.volumeName }}
+              mountPath: {{ .Values.postgres.storage.mountPath }}
   volumeClaimTemplates:
     - metadata:
-        name: cart-db-storage
+        name: {{ .Values.postgres.storage.volumeName }}
       spec:
-        accessModes: ["ReadWriteOnce"]
+        accessModes:
+          - {{ .Values.postgres.storage.accessMode }}
         storageClassName: {{ .Values.postgres.storage.storageClass }}
         resources:
           requests:
