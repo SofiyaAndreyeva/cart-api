@@ -1,0 +1,67 @@
+namespace: dev
+
+replicaCount: 1
+
+resourceQuota:
+  name: dev-quota
+  requestsCpu: "1"
+  requestsMemory: 1Gi
+  limitsCpu: "2"
+  limitsMemory: 2Gi
+  pods: "10"
+
+config:
+  httpPort: "3000"
+  logLevel: "debug"
+  dbHost: "cart-db"
+  dbPort: "5432"
+  dbName: "cart-api-db"
+  dbSslMode: "disable"
+
+service:
+  type: ClusterIP
+
+secret:
+  dbUser: "postgres"
+  dbPassword: "postgres"
+
+resources:
+  requests:
+    cpu: "150m"
+    memory: "128Mi"
+  limits:
+    cpu: "300m"
+    memory: "256Mi"
+
+autoscaling:
+  minReplicas: 1
+  maxReplicas: 2
+  targetCPUUtilizationPercentage: 50
+
+postgres:
+  name: cart-db
+  replicaCount: 1
+  port: 5432
+
+  labels:
+    app: cart-db
+
+  image: postgres:15
+  db: cart-api-db
+  user: postgres
+  password: postgres
+
+  storage:
+    volumeName: cart-db-storage
+    mountPath: /var/lib/postgresql/data
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    storageClass: standard
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"

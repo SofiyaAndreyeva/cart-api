@@ -1,0 +1,67 @@
+namespace: qa
+
+replicaCount: 2
+
+resourceQuota:
+  name: qa-quota
+  requestsCpu: "2"
+  requestsMemory: 2Gi
+  limitsCpu: "4"
+  limitsMemory: 4Gi
+  pods: "20"
+
+config:
+  httpPort: "3000"
+  logLevel: "info"
+  dbHost: "cart-db"
+  dbPort: "5432"
+  dbName: "cart-api-db"
+  dbSslMode: "disable"
+  
+service:
+  type: ClusterIP
+
+secret:
+  dbUser: "postgres"
+  dbPassword: "postgres"
+
+resources:
+  requests:
+    cpu: "250m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 60
+
+postgres:
+  name: cart-db
+  replicaCount: 1
+  port: 5432
+
+  labels:
+    app: cart-db
+
+  image: postgres:15
+  db: cart-api-db
+  user: postgres
+  password: postgres
+
+  storage:
+    volumeName: cart-db-storage
+    mountPath: /var/lib/postgresql/data
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    storageClass: standard
+
+  resources:
+    requests:
+      cpu: "250m"
+      memory: "256Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
